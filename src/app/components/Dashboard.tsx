@@ -31,11 +31,11 @@ export default function Dashboard() {
   })
   
   const handleSelectVehicle = (vehicleId: number) => {
-    dispatch(selectVehicleId(vehicleId))
+    dispatch(setSelectedVehicleId(vehicleId))
   }
   
   const closeModal = () => {
-    dispatch(selectVehicleId(null))
+    dispatch(setSelectedVehicleId(null))
   }
 
   return (
