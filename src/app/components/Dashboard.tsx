@@ -3,6 +3,10 @@
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { setSelectedVehicleId, setViewMode, setSortBy } from '@/store/dashboardSlice'
 import VehicleControls from './VehicleControls'
+import ViewToggle from './ViewToggle'
+import SortDropdown from './SortDropdown'
+import VehicleGrid from './VehicleGrid'
+import VehicleList from './VehicleList'
 import VehicleModal from './VehicleModal'
 
 export default function Dashboard() {
@@ -44,9 +48,18 @@ export default function Dashboard() {
       
       <div className="flex justify-between items-center mb-6">
         <VehicleControls />
+        <div className="flex gap-4">
+            <SortDropdown />
+            <ViewToggle />
+        </div>
       </div>
 
       {/* viewmode here */}
+      {viewMode === 'grid' ? 
+        <VehicleGrid vehicles={sortedVehicles} onSelectVehicle={handleSelectVehicle} /> 
+        :
+        <VehicleList vehicles={sortedVehicles} onSelectVehicle={handleSelectVehicle} />
+      }
       
       {selectedVehicleId && (
         <VehicleModal 
