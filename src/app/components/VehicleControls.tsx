@@ -8,7 +8,15 @@ export default function VehicleControls() {
   const { filter, totalCount } = useAppSelector(state => state.vehicles)
   
   const handleAddVehicle = () => {
-    // Your existing random vehicle logic
+    const newVehicle = {
+        id: Date.now(),
+        make: ['Toyota', 'Honda', 'Chevrolet', 'Tesla'][Math.floor(Math.random() * 4)],
+        model: ['Camry', 'Civic', 'Mustang', 'Model Y'][Math.floor(Math.random() * 4)],
+        year: 2020 + Math.floor(Math.random() * 5),
+        price: 20000 + Math.floor(Math.random() * 50000),
+        status: 'available' as const
+      }
+      dispatch(addVehicle(newVehicle))
   }
 
   return (
