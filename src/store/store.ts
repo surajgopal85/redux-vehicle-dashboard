@@ -1,10 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import vehicleReducer from './vehicleSlice';
+import Dashboard from "@/app/components/Dashboard";
+import dashboardReducer from './dashboardSlice';
 
 export const store = configureStore({
     reducer: {
         // add slices here
-        vehicles: vehicleReducer
+        vehicles: vehicleReducer, 
+        dashboard: dashboardReducer
     }
 })
 
