@@ -1,7 +1,9 @@
 // src/components/Dashboard.tsx
 'use client'
+import { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { setSelectedVehicleId, setViewMode, setSortBy } from '@/store/dashboardSlice'
+import { fetchVehicles } from '@/store/vehicleSlice'
 import VehicleControls from './VehicleControls'
 import ViewToggle from './ViewToggle'
 import SortDropdown from './SortDropdown'
@@ -16,7 +18,23 @@ export default function Dashboard() {
   const { selectedVehicleId, viewMode, sortBy } = useAppSelector(state => state.dashboard)
   
   // vehicle data
-  const { vehicles, filter } = useAppSelector(state => state.vehicles)
+  const { vehicles, filter, loading, error } = useAppSelector(state => state.vehicles)
+  
+  // fetch vehicles on mount
+  useEffect(() => {
+    dispatch(fetchVehicles());
+  }, [dispatch])
+  
+  // if there's an error, show it
+  if (error) {
+    return <div className='text-red-500'>Error: {error}</div>
+  }
+  
+  
+  // if loading, show a loading message
+  if (loading) {
+    return <div className='text-gray-500'>Loading...</div>
+  }
   
   // filter & sort
   const filteredVehicles = vehicles.filter(vehicle => 
