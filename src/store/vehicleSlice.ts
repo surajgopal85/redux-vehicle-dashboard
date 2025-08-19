@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit";
 
 interface Vehicle {
     id: number;
@@ -13,13 +13,47 @@ interface VehicleState {
     vehicles: Vehicle[];
     totalCount: number;
     filter: string;
+    loading: boolean;
+    error: string | null;
 }
 
 const initialState: VehicleState = {
     vehicles: [],
     totalCount: 0,
-    filter: ''
+    filter: '',
+    loading: false,
+    error: null
 }
+
+// async thunk
+export const fetchVehicles = createAsyncThunk(
+    'vehicles/fetchVehicles',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await fetch('http://localhost:8080/api/vehicles');
+            
+            // Check if the response is ok (status 200-299)
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Network error'}))
+                return rejectWithValue({
+                    status: res.status,
+                    message: errorData.message || `HTTP error status: ${res.status}`
+                })
+            }
+            
+            // Parse the JSON response
+            const data = await res.json();
+            return data;
+        } catch (error) {
+            // Handle network errors or JSON parsing errors
+            console.error('Fetch vehicles error:', error);
+            return rejectWithValue({
+                status: 500,
+                message: error instanceof Error ? error.message : 'Unknown error occurred'
+            });
+        }
+    }
+)
 
 const vehicleSlice = createSlice({
     name: 'vehicles',
@@ -42,6 +76,27 @@ const vehicleSlice = createSlice({
                 vehicle.status = 'sold';
             }
         }
+    },
+    extraReducers: (builder) => {
+        // thunk states for fetchVehicles
+        // builder is a function that allows us to add cases to the slice
+        builder
+            .addCase(fetchVehicles.pending, (state) => {
+                // if it's pending, loading = true
+                state.loading = true;
+            })
+            .addCase(fetchVehicles.fulfilled, (state, action) => {
+                // if it's fulfilled, loading = false PLUS it's completed so there's an action payload
+                state.loading = false;
+                state.vehicles = action.payload;
+                state.totalCount = action.payload.length;
+                state.error = null;
+            })
+            .addCase(fetchVehicles.rejected, (state, action) => {
+                console.error('Failed to fetch vehicles:', action.payload);
+                state.loading = false;
+                state.error = (action.payload as any)?.message || 'Failed to fetch vehicles';
+            });
     }
 })
 
