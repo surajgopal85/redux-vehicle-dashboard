@@ -7,7 +7,7 @@ interface Vehicle {
   model: string
   year: number
   price: number
-  status: 'available' | 'sold' | 'pending'
+  status: 'AVAILABLE' | 'SOLD' | 'PENDING' | 'MAINTENANCE' | 'RESERVED'
 }
 
 interface VehicleListProps {
@@ -71,11 +71,15 @@ export default function VehicleList({ vehicles, onSelectVehicle }: VehicleListPr
               {/* Status */}
               <div className="col-span-2">
                 <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                  vehicle.status === 'available' 
-                    ? 'bg-green-100 text-green-800' 
-                    : vehicle.status === 'sold'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-yellow-100 text-yellow-800'
+                  vehicle.status === 'AVAILABLE' 
+                  ? 'bg-green-100 text-green-800' 
+                : vehicle.status === 'SOLD'
+                  ? 'bg-red-100 text-red-800'
+                : vehicle.status === 'PENDING'
+                  ? 'bg-yellow-100 text-yellow-800'
+                : vehicle.status === 'MAINTENANCE'
+                  ? 'bg-gray-100 text-gray-800'
+                : 'bg-blue-100 text-blue-800'
                 }`}>
                   {vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1)}
                 </span>

@@ -6,7 +6,7 @@ interface Vehicle {
     model: string;
     year: number;
     price: number;
-    status: 'available' | 'pending' | 'sold';
+    status: 'AVAILABLE' | 'PENDING' | 'SOLD' | 'MAINTENANCE' | 'RESERVED';
 }
 
 interface VehicleState {
@@ -73,7 +73,25 @@ const vehicleSlice = createSlice({
         markAsSold: (state, action: PayloadAction<number>) => {
             const vehicle = state.vehicles.find(v => v.id === action.payload);
             if (vehicle) {
-                vehicle.status = 'sold';
+                vehicle.status = 'SOLD';
+            }
+        },
+        markAsPending: (state, action: PayloadAction<number>) => {
+            const vehicle = state.vehicles.find(v => v.id === action.payload);
+            if (vehicle) {
+                vehicle.status = 'PENDING';
+            }
+        },
+        markAsMaintenance: (state, action: PayloadAction<number>) => {
+            const vehicle = state.vehicles.find(v => v.id === action.payload)
+            if (vehicle) {
+                vehicle.status = 'MAINTENANCE';
+            }
+        },
+        markAsReserved: (state, action: PayloadAction<number>) => {
+            const vehicle = state.vehicles.find(v => v.id === action.payload)
+            if (vehicle) {
+                vehicle.status = 'RESERVED';
             }
         }
     },
@@ -100,5 +118,5 @@ const vehicleSlice = createSlice({
     }
 })
 
-export const { addVehicle, removeVehicle, updateFilter, markAsSold } = vehicleSlice.actions;
+export const { addVehicle, removeVehicle, updateFilter, markAsSold, markAsPending, markAsMaintenance, markAsReserved } = vehicleSlice.actions;
 export default vehicleSlice.reducer;

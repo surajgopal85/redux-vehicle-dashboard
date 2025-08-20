@@ -7,7 +7,7 @@ interface Vehicle {
   model: string
   year: number
   price: number
-  status: 'available' | 'sold' | 'pending'
+  status: 'AVAILABLE' | 'SOLD' | 'PENDING' | 'MAINTENANCE' | 'RESERVED'
 }
 
 interface VehicleGridProps {
@@ -53,11 +53,15 @@ export default function VehicleGrid({ vehicles, onSelectVehicle }: VehicleGridPr
           {/* Status Badge */}
           <div className="flex justify-between items-center">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              vehicle.status === 'available' 
+              vehicle.status === 'AVAILABLE' 
                 ? 'bg-green-100 text-green-800' 
-                : vehicle.status === 'sold'
+              : vehicle.status === 'SOLD'
                 ? 'bg-red-100 text-red-800'
-                : 'bg-yellow-100 text-yellow-800'
+              : vehicle.status === 'PENDING'
+                ? 'bg-yellow-100 text-yellow-800'
+              : vehicle.status === 'MAINTENANCE'
+                ? 'bg-gray-100 text-gray-800'
+              : 'bg-blue-100 text-blue-800'
             }`}>
               {vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1)}
             </span>
