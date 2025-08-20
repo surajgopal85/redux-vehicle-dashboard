@@ -15,6 +15,7 @@ interface VehicleState {
     filter: string;
     loading: boolean;
     error: string | null;
+    isNewVehicleModalOpen: boolean;
 }
 
 const initialState: VehicleState = {
@@ -22,7 +23,8 @@ const initialState: VehicleState = {
     totalCount: 0,
     filter: '',
     loading: false,
-    error: null
+    error: null,
+    isNewVehicleModalOpen: false
 }
 
 // async thunk
@@ -57,7 +59,7 @@ export const fetchVehicles = createAsyncThunk(
 
 export const createVehicle = createAsyncThunk(
     'vehicles/createVehicle',
-    async (vehicleData: Vehicle, { rejectWithValue }) => {
+    async (vehicleData: Omit<Vehicle, 'id'>, { rejectWithValue }) => {
         try {
             const res = await fetch('http://localhost:8080/api/vehicles', {
                 method: 'POST',
@@ -119,6 +121,12 @@ const vehicleSlice = createSlice({
             if (vehicle) {
                 vehicle.status = 'RESERVED';
             }
+        },
+        openNewVehicleModal: (state) => {
+            state.isNewVehicleModalOpen = true;
+        },
+        closeNewVehicleModal: (state) => {
+            state.isNewVehicleModalOpen = false;
         }
     },
     extraReducers: (builder) => {
@@ -140,9 +148,24 @@ const vehicleSlice = createSlice({
                 console.error('Failed to fetch vehicles:', action.payload);
                 state.loading = false;
                 state.error = (action.payload as any)?.message || 'Failed to fetch vehicles';
+            })
+            // Handle createVehicle async thunk states
+            .addCase(createVehicle.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createVehicle.fulfilled, (state, action) => {
+                state.loading = false;
+                state.vehicles.push(action.payload);
+                state.totalCount++;
+                state.isNewVehicleModalOpen = false; // Close modal on success
+            })
+            .addCase(createVehicle.rejected, (state, action) => {
+                state.loading = false;
+                state.error = (action.payload as any)?.message || 'Failed to create vehicle';
             });
     }
 })
 
-export const { addVehicle, removeVehicle, updateFilter, markAsSold, markAsPending, markAsMaintenance, markAsReserved } = vehicleSlice.actions;
+export const { addVehicle, removeVehicle, updateFilter, markAsSold, markAsPending, markAsMaintenance, markAsReserved, openNewVehicleModal, closeNewVehicleModal } = vehicleSlice.actions;
 export default vehicleSlice.reducer;

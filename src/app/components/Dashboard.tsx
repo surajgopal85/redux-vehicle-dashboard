@@ -10,6 +10,7 @@ import SortDropdown from './SortDropdown'
 import VehicleGrid from './VehicleGrid'
 import VehicleList from './VehicleList'
 import VehicleModal from './VehicleModal'
+import NewVehicleModal from './NewVehicleModal'
 
 export default function Dashboard() {
   const dispatch = useAppDispatch()
@@ -18,7 +19,7 @@ export default function Dashboard() {
   const { selectedVehicleId, viewMode, sortBy } = useAppSelector(state => state.dashboard)
   
   // vehicle data
-  const { vehicles, filter, loading, error } = useAppSelector(state => state.vehicles)
+  const { vehicles, filter, loading, error, isNewVehicleModalOpen } = useAppSelector(state => state.vehicles)
   
   // fetch vehicles on mount
   useEffect(() => {
@@ -64,9 +65,9 @@ export default function Dashboard() {
     <div className="p-8 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Vehicle Dashboard</h1>
       
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-coljustify-between items-center mb-6">
         <VehicleControls />
-        <div className="flex gap-4">
+        <div className="flex flex-row gap-4">
             <SortDropdown />
             <ViewToggle />
         </div>
@@ -84,6 +85,10 @@ export default function Dashboard() {
           vehicleId={selectedVehicleId} 
           onClose={closeModal}
         />
+      )}
+      
+      {isNewVehicleModalOpen && (
+        <NewVehicleModal />
       )}
     </div>
   )
