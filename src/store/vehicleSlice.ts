@@ -55,6 +55,32 @@ export const fetchVehicles = createAsyncThunk(
     }
 )
 
+export const createVehicle = createAsyncThunk(
+    'vehicles/createVehicle',
+    async (vehicleData: Vehicle, { rejectWithValue }) => {
+        try {
+            const res = await fetch('http://localhost:8080/api/vehicles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(vehicleData)
+            })
+
+            if (!res.ok) {
+                const errorData = await res.json()
+                return rejectWithValue(errorData)
+            }
+            return await res.json();
+        } catch(error) {
+            return rejectWithValue({
+                status: 500,
+                message: error instanceof Error ? error.message : 'Network error'
+            })
+        }
+    }
+)
+
 const vehicleSlice = createSlice({
     name: 'vehicles',
     initialState,
