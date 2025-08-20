@@ -65,12 +65,12 @@ export default function Dashboard() {
     <div className="p-8 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Vehicle Dashboard</h1>
       
-      <div className="flex flex-coljustify-between items-center mb-6">
+      <div className="flex flex-row justify-between items-center mb-6">
         <VehicleControls />
-        <div className="flex flex-row gap-4">
+        {/* <div className="flex flex-row gap-4"> */}
             <SortDropdown />
             <ViewToggle />
-        </div>
+        {/* </div> */}
       </div>
 
       {/* viewmode here */}

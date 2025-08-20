@@ -1,10 +1,11 @@
 'use client'
 import { useState } from 'react'
-import { useAppDispatch } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { createVehicle, closeNewVehicleModal } from '@/store/vehicleSlice'
 
 export default function NewVehicleModal() {
     const dispatch = useAppDispatch()
+    const { creating, error } = useAppSelector(state => state.vehicles)
     const [formData, setFormData] = useState({
         make: '',
         model: '',
@@ -38,6 +39,12 @@ export default function NewVehicleModal() {
                 </button>
                 
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Add New Vehicle</h2>
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                        {error}
+                    </div>
+                )}
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -111,9 +118,16 @@ export default function NewVehicleModal() {
                     <div className="flex gap-3 pt-4">
                         <button 
                             type="submit"
-                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                            disabled={creating}
+
+                            className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors
+                                ${ creating 
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600'
+                                }
+                                text-white`}
                         >
-                            Add Vehicle
+                            { creating ? 'Creating...' : 'Add Vehicle' }
                         </button>
                         <button 
                             type="button"
@@ -128,30 +142,3 @@ export default function NewVehicleModal() {
         </div>
     )
 }
-
-{/* <form 
-      className='flex flex-col border border-gray-300 rounded-md gap-2 p-4'
-      onSubmit={handleAddVehicle}>
-        <label htmlFor="make" className='text-sm font-bold'>Make</label>
-        <input type="text" placeholder="Make" id="make" />
-        <label htmlFor="model" className='text-sm font-bold'>Model</label>
-        <input type="text" placeholder="Model" id="model" />
-        <label htmlFor="year" className='text-sm font-bold'>Year</label>
-        <input type="number" placeholder="Year" id="year" />
-        <label htmlFor="price" className='text-sm font-bold'>Price</label>
-        <input type="number" placeholder="Price" id="price" />
-        <label htmlFor="status" className='text-sm font-bold'>Status</label>
-        <select name="status" id="status">
-          <option value="AVAILABLE">Available</option>
-          <option value="SOLD">Sold</option>
-          <option value="PENDING">Pending</option>
-          <option value="MAINTENANCE">Maintenance</option>
-          <option value="RESERVED">Reserved</option>
-        </select>
-        <button 
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Add Vehicle
-        </button>
-      </form> */}

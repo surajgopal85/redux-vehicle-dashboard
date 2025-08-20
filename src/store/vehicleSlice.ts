@@ -14,6 +14,7 @@ interface VehicleState {
     totalCount: number;
     filter: string;
     loading: boolean;
+    creating: boolean;
     error: string | null;
     isNewVehicleModalOpen: boolean;
 }
@@ -23,6 +24,7 @@ const initialState: VehicleState = {
     totalCount: 0,
     filter: '',
     loading: false,
+    creating: false,
     error: null,
     isNewVehicleModalOpen: false
 }
@@ -151,17 +153,17 @@ const vehicleSlice = createSlice({
             })
             // Handle createVehicle async thunk states
             .addCase(createVehicle.pending, (state) => {
-                state.loading = true;
+                state.creating = true;
                 state.error = null;
             })
             .addCase(createVehicle.fulfilled, (state, action) => {
-                state.loading = false;
+                state.creating = false;
                 state.vehicles.push(action.payload);
                 state.totalCount++;
                 state.isNewVehicleModalOpen = false; // Close modal on success
             })
             .addCase(createVehicle.rejected, (state, action) => {
-                state.loading = false;
+                state.creating = false;
                 state.error = (action.payload as any)?.message || 'Failed to create vehicle';
             });
     }
