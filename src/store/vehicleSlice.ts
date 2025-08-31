@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk} from "@reduxjs/toolkit";
 
 interface Vehicle {
     id: number;
@@ -6,20 +6,84 @@ interface Vehicle {
     model: string;
     year: number;
     price: number;
-    status: 'available' | 'pending' | 'sold';
+    status: 'AVAILABLE' | 'PENDING' | 'SOLD' | 'MAINTENANCE' | 'RESERVED';
 }
 
 interface VehicleState {
     vehicles: Vehicle[];
     totalCount: number;
     filter: string;
+    loading: boolean;
+    creating: boolean;
+    error: string | null;
+    isNewVehicleModalOpen: boolean;
 }
 
 const initialState: VehicleState = {
     vehicles: [],
     totalCount: 0,
-    filter: ''
+    filter: '',
+    loading: false,
+    creating: false,
+    error: null,
+    isNewVehicleModalOpen: false
 }
+
+// async thunk
+export const fetchVehicles = createAsyncThunk(
+    'vehicles/fetchVehicles',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await fetch('http://localhost:8080/api/vehicles');
+            
+            // Check if the response is ok (status 200-299)
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ message: 'Network error'}))
+                return rejectWithValue({
+                    status: res.status,
+                    message: errorData.message || `HTTP error status: ${res.status}`
+                })
+            }
+            
+            // Parse the JSON response
+            const data = await res.json();
+            return data;
+        } catch (error) {
+            // Handle network errors or JSON parsing errors
+            console.error('Fetch vehicles error:', error);
+            return rejectWithValue({
+                status: 500,
+                message: error instanceof Error ? error.message : 'Unknown error occurred'
+            });
+        }
+    }
+)
+
+export const createVehicle = createAsyncThunk(
+    'vehicles/createVehicle',
+    async (vehicleData: Omit<Vehicle, 'id'>, { rejectWithValue }) => {
+        try {
+            const res = await fetch('http://localhost:8080/api/vehicles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(vehicleData)
+            })
+
+            if (!res.ok) {
+                const errorData = await res.json()
+                return rejectWithValue(errorData)
+            }
+            return await res.json();
+        } catch(error) {
+            return rejectWithValue({
+                status: 500,
+                message: error instanceof Error ? error.message : 'Network error'
+            })
+        }
+    }
+)
 
 const vehicleSlice = createSlice({
     name: 'vehicles',
@@ -39,11 +103,71 @@ const vehicleSlice = createSlice({
         markAsSold: (state, action: PayloadAction<number>) => {
             const vehicle = state.vehicles.find(v => v.id === action.payload);
             if (vehicle) {
-                vehicle.status = 'sold';
+                vehicle.status = 'SOLD';
             }
+        },
+        markAsPending: (state, action: PayloadAction<number>) => {
+            const vehicle = state.vehicles.find(v => v.id === action.payload);
+            if (vehicle) {
+                vehicle.status = 'PENDING';
+            }
+        },
+        markAsMaintenance: (state, action: PayloadAction<number>) => {
+            const vehicle = state.vehicles.find(v => v.id === action.payload)
+            if (vehicle) {
+                vehicle.status = 'MAINTENANCE';
+            }
+        },
+        markAsReserved: (state, action: PayloadAction<number>) => {
+            const vehicle = state.vehicles.find(v => v.id === action.payload)
+            if (vehicle) {
+                vehicle.status = 'RESERVED';
+            }
+        },
+        openNewVehicleModal: (state) => {
+            state.isNewVehicleModalOpen = true;
+        },
+        closeNewVehicleModal: (state) => {
+            state.isNewVehicleModalOpen = false;
         }
+    },
+    extraReducers: (builder) => {
+        // thunk states for fetchVehicles
+        // builder is a function that allows us to add cases to the slice
+        builder
+            .addCase(fetchVehicles.pending, (state) => {
+                // if it's pending, loading = true
+                state.loading = true;
+            })
+            .addCase(fetchVehicles.fulfilled, (state, action) => {
+                // if it's fulfilled, loading = false PLUS it's completed so there's an action payload
+                state.loading = false;
+                state.vehicles = action.payload;
+                state.totalCount = action.payload.length;
+                state.error = null;
+            })
+            .addCase(fetchVehicles.rejected, (state, action) => {
+                console.error('Failed to fetch vehicles:', action.payload);
+                state.loading = false;
+                state.error = (action.payload as any)?.message || 'Failed to fetch vehicles';
+            })
+            // Handle createVehicle async thunk states
+            .addCase(createVehicle.pending, (state) => {
+                state.creating = true;
+                state.error = null;
+            })
+            .addCase(createVehicle.fulfilled, (state, action) => {
+                state.creating = false;
+                state.vehicles.push(action.payload);
+                state.totalCount++;
+                state.isNewVehicleModalOpen = false; // Close modal on success
+            })
+            .addCase(createVehicle.rejected, (state, action) => {
+                state.creating = false;
+                state.error = (action.payload as any)?.message || 'Failed to create vehicle';
+            });
     }
 })
 
-export const { addVehicle, removeVehicle, updateFilter, markAsSold } = vehicleSlice.actions;
+export const { addVehicle, removeVehicle, updateFilter, markAsSold, markAsPending, markAsMaintenance, markAsReserved, openNewVehicleModal, closeNewVehicleModal } = vehicleSlice.actions;
 export default vehicleSlice.reducer;
